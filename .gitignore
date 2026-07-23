@@ -1,0 +1,16 @@
+
+.env
+
+
+__pycache__/
+*.pyc
+venv/
+.venv/
+src/agents/coding_sandbox/tmp_code_*
+
+
+logs/*.log
+
+papers/
+.vscode/
+.idea/
