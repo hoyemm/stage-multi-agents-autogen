@@ -1,0 +1,11 @@
+def est_pair(compte):
+    """Vérifie si le nombre passé en paramètre est pair."""
+    return compte % 2 == 0
+
+# Exemples d'utilisation
+comptes_a_tester = [0, 1, 2, 15, 28, 33, 44]
+for compte in comptes_a_tester:
+    if est_pair(compte):
+        print(f"Le compte {compte} est pair.")
+    else:
+        print(f"Le compte {compte} n'est pas pair.")

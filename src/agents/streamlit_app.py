@@ -17,7 +17,7 @@ import streamlit as st
 # On réutilise telles quelles les fonctions de construction des agents et
 # de l'équipe définies dans multi_agent_team.py, pour éviter la duplication
 # de logique entre le script CLI et l'interface web.
-from multi_agent_team import (
+from multi_agents import (
     build_model_client,
     build_planner,
     build_coder,
