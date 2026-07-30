@@ -2,8 +2,12 @@
 Équipe multi-agents AutoGen (autogen_agentchat) :
   1. Planificateur : décompose la demande en sous-tâches
   2. Codeur        : écrit le code Python demandé
-  3. Réviseur      : relit le code, propose des corrections, valide
-  4. Exécuteur     : exécute le code validé dans un conteneur Docker isolé
+  3. Exécuteur     : exécute le code dans un conteneur Docker isolé
+  4. Réviseur      : relit le code ET son résultat d'exécution réel,
+                     propose des corrections ou valide (TERMINATE)
+
+Ordre du pipeline : planificateur -> codeur -> executeur -> reviseur (round-robin)
+Ainsi le réviseur ne valide jamais un code qui n'a pas réellement été testé.
 
 Sécurités mises en place :
   - Terminaison sur mot-clé "TERMINATE" OU nombre max de messages atteint
@@ -75,9 +79,13 @@ def build_coder(model_client: OpenAIChatCompletionClient) -> AssistantAgent:
         model_client=model_client,
         system_message=(
             "Tu es un agent CODEUR. En te basant sur le plan fourni par le "
-            "planificateur, écris du code Python dans un bloc ```python ... ```. "
-            "Si le réviseur signale des erreurs ou des améliorations, corrige "
-            "ton code en conséquence et renvoie une version mise à jour complète. "
+            "planificateur (ou sur les corrections demandées par le réviseur), "
+            "écris du code Python complet dans un unique bloc ```python ... ```. "
+            "Le code sera exécuté automatiquement juste après ton message : "
+            "assure-toi qu'il s'exécute sans entrée interactive (n'utilise pas "
+            "input()) et qu'il affiche un résultat clair via print(). "
+            "Si le réviseur signale des erreurs après exécution, corrige ton "
+            "code en conséquence et renvoie une version mise à jour complète. "
             "N'écris jamais TERMINATE."
         ),
     )
@@ -91,13 +99,17 @@ def build_reviewer(model_client: OpenAIChatCompletionClient) -> AssistantAgent:
         name="reviseur",
         model_client=model_client,
         system_message=(
-            "Tu es un agent RÉVISEUR de code. Analyse le code produit par le "
-            "codeur : repère les erreurs, les failles de sécurité (ex. suppression "
-            "de fichiers, accès réseau non contrôlé, commandes système dangereuses) "
-            "et les problèmes de style. "
-            "- Si le code doit être corrigé, explique précisément ce qui ne va pas.\n"
-            "- Si le code est correct et sûr, réponds uniquement par : "
-            "'Code validé. TERMINATE'"
+            "Tu es un agent RÉVISEUR de code. Tu interviens APRÈS que le code du "
+            "codeur a été exécuté dans un conteneur Docker isolé : tu disposes donc "
+            "à la fois du code source et de son résultat d'exécution réel (sortie "
+            "standard, erreurs éventuelles). "
+            "Analyse les deux : repère les erreurs d'exécution, les failles de "
+            "sécurité (ex. suppression de fichiers, accès réseau non contrôlé, "
+            "commandes système dangereuses) et les problèmes de style. "
+            "- Si le code a échoué à l'exécution OU doit être corrigé, explique "
+            "précisément ce qui ne va pas afin que le codeur puisse corriger.\n"
+            "- Si le code s'est exécuté avec succès, est correct et sûr, réponds "
+            "uniquement par : 'Code validé. TERMINATE'"
         ),
     )
 
@@ -139,8 +151,12 @@ async def main():
     #  - OU nombre max de messages atteint (anti-boucle infinie / anti-quota)
     termination = TextMentionTermination("TERMINATE") | MaxMessageTermination(MAX_MESSAGES)
 
+    # Ordre du round-robin : planificateur -> codeur -> executeur -> reviseur
+    # Le réviseur voit ainsi le résultat RÉEL de l'exécution (pas seulement le
+    # code source) avant de décider de valider (TERMINATE) ou de renvoyer au
+    # codeur pour correction.
     team = RoundRobinGroupChat(
-        [planificateur, codeur, reviseur, executeur],
+        [planificateur, codeur, executeur, reviseur],
         termination_condition=termination,
     )
 

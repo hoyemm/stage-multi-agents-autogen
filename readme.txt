@@ -41,7 +41,7 @@ cp .env.example .env
 python scripts/test_connection.py
 
 # 6. Lancer le premier agent AutoGen
-python agents/simple_agent.py
+python src/agents/multi_agents.py
 ```
 
 ## Notes

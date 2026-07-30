@@ -6,7 +6,7 @@ __pycache__/
 *.pyc
 venv/
 .venv/
-src/agents/coding_sandbox/tmp_code_*
+coding_sandbox/tmp_code_*
 
 
 logs/*.log
