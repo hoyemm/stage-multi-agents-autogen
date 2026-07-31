@@ -1,0 +1,12 @@
+def generate_etoile():
+    etoile = [
+        "   *   ",
+        "  ***  ",
+        "*******",
+        "  ***  ",
+        " * * * ",
+        "*  *  *"
+    ]
+    return '\n'.join(etoile)
+
+print(generate_etoile())

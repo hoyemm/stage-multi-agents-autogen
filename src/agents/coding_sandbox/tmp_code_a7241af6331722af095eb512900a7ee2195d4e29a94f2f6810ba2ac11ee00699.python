@@ -1,0 +1,26 @@
+import math
+
+def draw_star_ascii(size=10):
+    canvas = [[' ' for _ in range(size*2+1)] for _ in range(size*2+1)]
+    center = size
+    points = []
+    for i in range(5):
+        angle = i * (2 * math.pi / 5) - math.pi/2
+        x = int(center + size * math.cos(angle))
+        y = int(center + size * math.sin(angle))
+        points.append((x, y))
+    for i in range(5):
+        start = points[i]
+        end = points[(i+2)%5]
+        x1, y1 = start
+        x2, y2 = end
+        for step in range(100):
+            t = step / 99
+            x = int(round(x1 + (x2-x1) * t))
+            y = int(round(y1 + (y2-y1) * t))
+            if 0 <= x < len(canvas) and 0 <= y < len(canvas):
+                canvas[y][x] = '*'
+    star = '\n'.join(''.join(row) for row in canvas)
+    return star
+
+print(draw_star_ascii())

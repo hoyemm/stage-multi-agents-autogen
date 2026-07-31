@@ -1,0 +1,30 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Paramètres pour l'étoile à 5 branches
+num_branches = 5
+outer_radius = 1
+inner_radius = 0.4
+
+angles_outer = np.linspace(0, 2 * np.pi, num_branches, endpoint=False)
+angles_inner = angles_outer + np.pi / num_branches
+
+star_x = []
+star_y = []
+
+for ang_outer, ang_inner in zip(angles_outer, angles_inner):
+    star_x.append(np.cos(ang_outer) * outer_radius)
+    star_y.append(np.sin(ang_outer) * outer_radius)
+    star_x.append(np.cos(ang_inner) * inner_radius)
+    star_y.append(np.sin(ang_inner) * inner_radius)
+star_x.append(star_x[0])
+star_y.append(star_y[0])
+
+plt.figure(figsize=(4,4))
+plt.plot(star_x, star_y, color='gold')
+plt.fill(star_x, star_y, 'gold', alpha=0.5)
+plt.axis('equal')
+plt.axis('off')
+plt.show()
+
+print("Étoile dessinée avec matplotlib.")

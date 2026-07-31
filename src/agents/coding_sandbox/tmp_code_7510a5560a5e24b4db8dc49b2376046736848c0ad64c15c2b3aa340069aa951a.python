@@ -1,0 +1,23 @@
+def generate_star(size=7):
+    lines = []
+    mid = size // 2
+    for i in range(size):
+        line = [' '] * size
+        if i == mid:
+            # horizontal
+            for j in range(size):
+                line[j] = '*'
+        else:
+            # vertical
+            line[mid] = '*'
+            # diagonals
+            if i < mid:
+                line[i] = '*'
+                line[size - 1 - i] = '*'
+            elif i > mid:
+                line[i] = '*'
+                line[size - 1 - i] = '*'
+        lines.append(''.join(line))
+    return '\n'.join(lines)
+
+print(generate_star(9))
